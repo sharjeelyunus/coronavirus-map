@@ -5,10 +5,8 @@ import { Map as BaseMap, TileLayer, ZoomControl } from 'react-leaflet';
 import { useConfigureLeaflet, useMapServices, useRefEffect } from 'hooks';
 import { isDomAvailable } from 'lib/util';
 
-const DEFAULT_MAP_SERVICE = 'OpenStreetMap';
-
 const Map = ( props ) => {
-  const { children, className, defaultBaseMap = DEFAULT_MAP_SERVICE, mapEffect, ...rest } = props;
+  const { children, className, defaultBaseMap = 'OpenStreetMap', mapEffect, ...rest } = props;
 
   const mapRef = useRef();
 
@@ -16,11 +14,11 @@ const Map = ( props ) => {
 
   useRefEffect({
     ref: mapRef,
-    effect: mapEffect,
+    effect: mapEffect
   });
 
   const services = useMapServices({
-    names: [...new Set([defaultBaseMap, DEFAULT_MAP_SERVICE])],
+    names: [defaultBaseMap]
   });
   const basemap = services.find(( service ) => service.name === defaultBaseMap );
 
@@ -41,7 +39,7 @@ const Map = ( props ) => {
   const mapSettings = {
     className: 'map-base',
     zoomControl: false,
-    ...rest,
+    ...rest
   };
 
   return (
@@ -59,7 +57,7 @@ Map.propTypes = {
   children: PropTypes.node,
   className: PropTypes.string,
   defaultBaseMap: PropTypes.string,
-  mapEffect: PropTypes.func,
+  mapEffect: PropTypes.func
 };
 
 export default Map;

@@ -1,7 +1,10 @@
 import React from 'react';
 import Helmet from 'react-helmet';
 import L from 'leaflet';
-import axios from 'axios';
+
+import { promiseToFlyTo, geoJsonToMarkers, clearMapLayers } from 'lib/map';
+import { trackerLocationsToGeoJson, trackerFeatureToHtmlMarker } from 'lib/coronavirus';
+import { useCoronavirusTracker } from 'hooks';
 
 import Layout from 'components/Layout';
 import Container from 'components/Container';
@@ -12,9 +15,14 @@ const LOCATION = {
   lng: 0
 };
 const CENTER = [LOCATION.lat, LOCATION.lng];
-const DEFAULT_ZOOM = 2;
+const DEFAULT_ZOOM = 1;
 
 const IndexPage = () => {
+  const { data = [] } = useCoronavirusTracker({
+    api: 'countries'
+  });
+  const hasData = Array.isArray(data) && data.length > 0;
+
   /**
    * mapEffect
    * @description Fires a callback once the page renders
@@ -22,99 +30,54 @@ const IndexPage = () => {
    */
 
   async function mapEffect({ leafletElement: map } = {}) {
-    if (!map) return;
+    if ( !map || !hasData ) return;
 
-    let response;
+    clearMapLayers({
+      map,
+      excludeByName: [ 'Mapbox' ]
+    })
 
-    try {
-      response = await axios.get('https://corona.lmao.ninja/countries');
+    const locationsGeoJson = trackerLocationsToGeoJson(data);
 
-    } catch(e) {
-      console.log('E', e);
-      return;
-    }
-
-    const { data } = resposne;
-    const hasData = Array.isArray(data) && data.length > 0;
-
-    if ( !hasData ) return;
-    const geoJson = {
-      type: 'FeatureCollection',
-      features: data.map((country = {}) => {
-        const { countryInfo = {} } = country;
-        const { lat, long: lng } = countryInfo;
-        return {
-          type: 'Feature',
-          properties: {
-            ...country,
-          },
-          geometry: {
-            type: 'Point',
-            coordinates: [ lng, lat ]
-          }
-        }
-      })
-    }
-
-    // const geoJsonLayers = new L.GeoJSON(geoJson, {
-    //   pointToLayer: (feature = {}, latlng) => {
-      function countryPointToLayer (feature = {}, lasting) {
-        const { properties = {} } = feature;
-        let updatedFormatted;
-        let casesString;
-    
-        const {
-          country,
-          updated,
-          cases,
-          deaths,
-          recovered
-        } = properties
-    
-        casesString = `${cases}`;
-    
-        if ( cases > 1000 ) {
-          casesString = `${casesString.slice(0, -3)}k+`
-        }
-    
-        if ( updated ) {
-          updatedFormatted = new Date(updated).toLocaleString();
-        }
-    
-        const html = `
-          <span class=“icon-marker”>
-            <span class=“icon-marker-tooltip”>
-              <h2>${country}</h2>
-              <ul>
-                <li><strong>Confirmed:</strong> ${cases}</li>
-                <li><strong>Deaths:</strong> ${deaths}</li>
-                <li><strong>Recovered:</strong> ${recovered}</li>
-                <li><strong>Last Update:</strong> ${updatedFormatted}</li>
-              </ul>
-            </span>
-            ${ casesString }
-          </span>
-        `;
-    
-        return L.marker( latlng, {
-          icon: L.divIcon({
-            className: 'icon',
-            html
-          }),
-          riseOnHover: true
-        });
-      }
-
-    const geoJsonLayers = new L.GeoJSON(geoJson, {
-      pointToLayer: countryPointToLayer
+    const locationsGeoJsonLayers = geoJsonToMarkers(locationsGeoJson, {
+      onClick: handleOnMarkerClick,
+      featureToHtml: trackerFeatureToHtmlMarker
     });
 
-    geoJsonLayers.addTo(map);
+    const bounds = locationsGeoJsonLayers.getBounds();
+
+    locationsGeoJsonLayers.addTo(map);
+
+    map.fitBounds(bounds);
+  }
+
+  function handleOnMarkerClick({ feature = {} } = {}, event = {}) {
+    const { target = {} } = event;
+    const { _map: map = {} } = target;
+
+    const { geometry = {}, properties = {} } = feature;
+    const { coordinates } = geometry;
+    const { countryBounds, countryCode } = properties;
+
+    promiseToFlyTo(map, {
+      center: {
+        lat: coordinates[1],
+        lng: coordinates[0]
+      },
+      zoom: 3
+    });
+
+    if ( countryBounds && countryCode !== 'US' ) {
+      const boundsGeoJsonLayer = new L.GeoJSON(countryBounds);
+      const boundsGeoJsonLayerBounds = boundsGeoJsonLayer.getBounds();
+
+      map.fitBounds(boundsGeoJsonLayerBounds);
+    }
   }
 
   const mapSettings = {
     center: CENTER,
-    defaultBaseMap: 'OpenStreetMap',
+    defaultBaseMap: 'Mapbox',
     zoom: DEFAULT_ZOOM,
     mapEffect
   };
@@ -128,12 +91,23 @@ const IndexPage = () => {
       <Map {...mapSettings} />
 
       <Container type="content" className="text-center home-start">
-        <h2>Still Getting Started?</h2>
-        <p>Run the following in your terminal!</p>
-        <pre>
-          <code>gatsby new [directory] https://github.com/colbyfayock/gatsby-starter-leaflet</code>
-        </pre>
-        <p className="note">Note: Gatsby CLI required globally for the above command</p>
+        <h2>Demo Mapping App with Gatsby and React Leaflet</h2>
+        <ul>
+          <li>
+            Uses <a href="https://github.com/ExpDev07/coronavirus-tracker-api">github.com/ExpDev07/coronavirus-tracker-api</a> via <a href="https://coronavirus-tracker-api.herokuapp.com/">coronavirus-tracker-api.herokuapp.com</a>
+          </li>
+          <li>
+            Which uses jhu - <a href="https://github.com/CSSEGISandData/COVID-19">github.com/CSSEGISandData/COVID-19</a> - Worldwide Data repository operated by the Johns Hopkins University Center for Systems Science and Engineering (JHU CSSE).
+          </li>
+          <li>
+            And csbs - <a href="https://www.csbs.org/information-covid-19-coronavirus">csbs.org/information-covid-19-coronavirus</a> - U.S. County data that comes from the Conference of State Bank Supervisors.
+          </li>
+        </ul>
+
+        <h2>Want to build your own map?</h2>
+        <p>
+          Check out <a href="https://github.com/colbyfayock/gatsby-starter-leaflet">github.com/colbyfayock/gatsby-starter-leaflet</a>
+        </p>
       </Container>
     </Layout>
   );

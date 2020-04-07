@@ -1,12 +1,27 @@
+$map-background: #081217;
+
 .map {
 
   position: relative;
 
   &,
   .map-base {
+
     width: 100%;
     height: 100%;
-    background: $blue-grey-50;
+    background: $map-background;
+
+    .leaflet-control-attribution {
+
+      color: $blue-grey-400;
+      background-color: darken($map-background, 5);
+
+      a {
+        color: #009ddb;
+      }
+
+    }
+
   }
 
 }
@@ -50,12 +65,12 @@
   border-radius: 100%;
   box-shadow: 0 2px 5px rgba(black, .9);
 
-  &:hover {
-
-    .icon-marker-tooltip {
-      display: block;
+  @media(hover: hover) and (pointer: fine) {
+    &:hover {
+      .icon-marker-tooltip {
+        display: block;
+      }
     }
-
   }
 
 }
@@ -78,7 +93,7 @@
     position: absolute;
     bottom: -.6em;
     left: 50%;
-    content: ‘’;
+    content: '';
     width: 1.4em;
     height: 1.4em;
     background-color: $blue-grey-900;
