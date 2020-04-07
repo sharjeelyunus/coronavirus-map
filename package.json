@@ -1,8 +1,8 @@
 {
-  "name": "cooronavirus-map",
-  "description": "Corona Virus Map",
+  "name": "gatsby-starter-leaflet",
+  "description": "A Gatsby starter with Leafet!",
   "version": "0.2.2",
-  "author": "Sharjeel Yunus <sharjeel924@gmail.com>",
+  "author": "Colby Fayock <hello@colbyfayock.com>",
   "dependencies": {
     "axios": "^0.19.2",
     "countries-list": "^2.5.4",
@@ -41,9 +41,9 @@
   },
   "keywords": [
     "gatsby",
-    "corona-map",
+    "sass",
     "leaflet",
-    "covid 19",
+    "mapping",
     "maps"
   ],
   "license": "MIT",

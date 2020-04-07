@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'gatsby';
+import { FaGithub } from 'react-icons/fa';
 
 import Container from 'components/Container';
 
@@ -7,22 +7,17 @@ const Header = () => {
   return (
     <header>
       <Container type="content">
-        <p>Corona Virus (COVID-19)</p>
+        <h1>Coronavirus (COVID-19)</h1>
         <ul>
           <li>
-            <Link to="https://github.com/sharjeelyunus/coronavirus-map">Source Code</Link>
+            <a href="https://github.com/colbyfayock/gatsby-starter-leaflet">
+              Gatsby Starter Leaflet
+            </a>
           </li>
           <li>
-            <Link to="https://github.com/sharjeelyunus"><FaGithub /></Link>
-          </li>
-          <li>
-            <Link to="https://facebook.com/sharjeelyunus1"><FaFacebook /></Link>
-          </li>
-          <li>
-            <Link to="https://twitter.com/sharjeelyunus"><FaTwitter /></Link>
-          </li>
-          <li>
-            <Link to="https://www.linkedin.com/in/sharjeel-yunus/"><FaLinkedIn /></Link>
+            <a href="https://github.com/colbyfayock/coronavirus-map-dashboard">
+              <FaGithub /> Github
+            </a>
           </li>
         </ul>
       </Container>
