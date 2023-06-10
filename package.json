@@ -6,7 +6,7 @@
   "dependencies": {
     "axios": "^0.21.1",
     "countries-list": "^2.5.4",
-    "gatsby": "^2.19.43",
+    "gatsby": "^4.25.7",
     "gatsby-plugin-react-helmet": "^3.1.23",
     "gatsby-plugin-react-leaflet": "2.0.12",
     "gatsby-plugin-resolve-src": "^2.0.0",
